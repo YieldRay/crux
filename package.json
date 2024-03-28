@@ -1,6 +1,6 @@
 {
     "name": "crux-land",
-    "version": "0.1.0",
+    "version": "0.1.1",
     "type": "module",
     "description": "Hosting small (≤ 20kB) deno scripts to crux.land",
     "main": "index.mjs",
