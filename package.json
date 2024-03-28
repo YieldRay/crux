@@ -1,25 +1,28 @@
 {
-    "name": "nodejs-purejs-template",
-    "private": true,
+    "name": "crux-land",
     "version": "0.1.0",
     "type": "module",
-    "description": "",
+    "description": "Hosting small (≤ 20kB) deno scripts to crux.land",
     "main": "index.mjs",
+    "files": [
+        "*.js",
+        "*.mjs",
+        "!*.test.*"
+    ],
     "scripts": {
         "test": "node --test",
         "watch": "tsc --watch"
     },
-    "keywords": [],
-    "author": "",
-    "license": "",
+    "author": "YieldRay",
+    "license": "MIT",
     "engines": {
         "node": ">16"
     },
     "bin": {
-        "cli-name": "./cli.mjs"
+        "crux": "./cli.mjs"
     },
     "devDependencies": {
-        "@types/node": "^20.10.6",
-        "typescript": "^5.3.3"
+        "@types/node": "^20.11.30",
+        "typescript": "^5.4.3"
     }
 }

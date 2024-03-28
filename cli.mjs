@@ -1,6 +1,21 @@
-import { parseArgs } from 'node:util'
 import process from 'node:process'
-import pkg from './package.json' assert { type: 'json' }
+import { readFileSync } from 'node:fs'
+import { parseArgs } from 'node:util'
+import { add } from './crux.mjs'
+
+function help() {
+    process.stdout
+        .write(`\x1b[32mcrux\x1b[0m - Hosting small (≤ 20kB) deno scripts to crux.land
+
+\x1b[1mUsage:\x1b[0m
+    crux <file>   # from path
+    crux < <file> # from stdin
+\x1b[1mFlags:\x1b[0m
+    --help, -h    Print this help
+    --name, -n    Used for specify extension
+`)
+    process.exit(1)
+}
 
 // https://nodejs.org/api/util.html#utilparseargsconfig
 const { values, positionals } = parseArgs({
@@ -11,50 +26,36 @@ const { values, positionals } = parseArgs({
             short: 'h',
             default: false,
         },
-        lhs: {
+        name: {
             type: 'string',
-            short: 'a',
-            default: '0',
-        },
-        rhs: {
-            type: 'string',
-            short: 'b',
-            default: '0',
+            short: 'n',
         },
     },
     strict: true,
     allowPositionals: true,
 })
 
-if (positionals.length < 1 || values.help) {
-    help()
-}
-
-const command = positionals[0]
-
-switch (command) {
-    case 'help':
+function main() {
+    if (positionals[0]) {
+        const filepath = positionals[0]
+        const buf = readFileSync(filepath)
+        return add(buf, values.name || filepath)
+    } else if (!process.stdin.isTTY) {
+        const buf = readFileSync(process.stdin.fd)
+        if (buf.byteLength === 0) {
+            console.error('stdin is empty')
+            process.exit(-1)
+        }
+        return add(buf, values.name || 'stdin.js')
+    } else {
         help()
-        break
-    case 'add':
-        const { lhs, rhs } = values
-        const sum = Number.parseFloat(lhs) + Number.parseFloat(rhs)
-        console.log('%s + %s = %s', lhs, rhs, sum)
-        break
-    default:
-        process.stderr.write(`Unknown command ${command}\n`)
-        process.exit(1)
+    }
 }
 
-function help() {
-    process.stdout.write(`\x1b[32m${pkg.name}\x1b[0m v${pkg.version}
-
-  A nodejs template in pure javascript
-
-  \x1b[1mUsage:\x1b[0m
-
-  cli-name add --lhs [number] --rhs [number]    Get sum of lhs and rhs
-  cli-name help                                 Show this help
-`)
-    process.exit(1)
+try {
+    const url = await main()
+    console.log(url)
+} catch (e) {
+    console.error(e.message)
+    process.exit(-1)
 }
